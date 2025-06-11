@@ -12,6 +12,7 @@
     <body>
         <nav>
     <a href="{{ route('articles.index') }}">Статьи</a>
+    <a href="{{ route('articles.create') }}">Создать статью</a>
 </nav>
         <div class="container mt-4">
             <h1>@yield('header')</h1>
