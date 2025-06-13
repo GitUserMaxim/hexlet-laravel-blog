@@ -2,50 +2,85 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use App\Models\Article;
+use Illuminate\Http\Request;
 
 class ArticleController extends Controller
 {
-   public function index()
+    /**
+     * Display a listing of the articles.
+     */
+    public function index()
     {
-        $articles = Article::paginate();
-        return view('article.index', compact('articles'));
+        $articles = Article::latest()->paginate(10);
+        return view('articles.index', compact('articles'));
     }
 
-     public function create()
+    /**
+     * Show the form for creating a new article.
+     */
+    public function create()
     {
-        // Передаем в шаблон вновь созданный объект. Он нужен для вывода формы
         $article = new Article();
-        return view('article.create', compact('article'));
+        return view('articles.create', compact('article'));
     }
 
-    public function show($id)
-    {
-        $article = Article::findOrFail($id);
-        return view('article.show', compact('article'));
-    }
-
-     // Здесь нам понадобится объект запроса для извлечения данных
+    /**
+     * Store a newly created article in storage.
+     */
     public function store(Request $request)
     {
-        // Проверка введенных данных
-        // Если будут ошибки, то возникнет исключение
-        // Иначе возвращаются данные формы
         $data = $request->validate([
-            'name' => 'required|unique:articles',
-            'body' => 'required|min:10',
+            'name' => 'required|string',
+            'body'  => 'required|string',
         ]);
 
-        $article = new Article();
-        // Заполнение статьи данными из формы
-        $article->fill($data);
-        // При ошибках сохранения возникнет исключение
-        $article->save();
-        //флэш сообщение
+        Article::create($data);
+
         $request->session()->flash('status', 'Статья успешно сохранена!');
-        // Редирект на указанный маршрут
-        return redirect()
-            ->route('articles.index');
+        return redirect()->route('articles.index');
+    }
+
+    /**
+     * Display the specified article.
+     */
+    public function show(Article $article)
+    {
+        return view('articles.show', compact('article'));
+    }
+
+    /**
+     * Show the form for editing the specified article.
+     */
+    public function edit(Article $article)
+    {
+        return view('articles.edit', compact('article'));
+    }
+
+    /**
+     * Update the specified article in storage.
+     */
+    public function update(Request $request, Article $article)
+    {
+        $data = $request->validate([
+            'name' => 'required|string',
+            'body'  => 'required|string',
+        ]);
+
+        $article->update($data);
+
+        $request->session()->flash('status', 'Статья успешно обновлена!');
+        return redirect()->route('articles.index');
+    }
+
+    /**
+     * Remove the specified article from storage.
+     */
+    public function destroy(Article $article)
+    {
+        $article->delete();
+
+        return redirect()->route('articles.index')
+                         ->with('status', 'Статья успешно удалена!');
     }
 }
